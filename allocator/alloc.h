@@ -97,7 +97,7 @@ void* __default_alloc<T>::refill(size_t n)
 
 	if (1 == nobjs)									// 内存池只能分一块了
 	{
-		return reinterpret_cast<void*>(chunk);
+		return static_cast<void*>(chunk);
 	}
 
 	obj* volatile * myfreelist;
@@ -162,7 +162,7 @@ char* __default_alloc<T>::chunk_alloc(size_t size, int& nobjs)
 		}
 
 		size_t bytes_to_get = 2*total_bytes+RoundUp(heap_size>>4);		// 应该注入内存池的空间
-		start_free = reinterpret_cast<char*>(malloc(bytes_to_get));
+		start_free = static_cast<char*>(malloc(bytes_to_get));
 		// 这个 if 没有机会执行吧？allocate 分配开始时，先查找了 freelist，没找到才 调用 refill，现在为什么有了？
 		// 找到 大于 size 的块倒是有可能；那可以直接 i = size+1;
 		if (nullptr == start_free)							// 请求注入内存池失败，heap 空间不足

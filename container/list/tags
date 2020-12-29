@@ -1,0 +1,46 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+__LIST_H	list.h	2;"	d
+__LIST_ITERATOR	list_iterator.h	2;"	d
+__LIST_NODE_H	list_node.h	2;"	d
+__list_iterator	list_iterator.h	/^    __list_iterator() { }$/;"	f	struct:__list_iterator
+__list_iterator	list_iterator.h	/^    __list_iterator(const iterator& x) : node(x.node) { }$/;"	f	struct:__list_iterator
+__list_iterator	list_iterator.h	/^    explicit __list_iterator(link_type p) : node(p) { }$/;"	f	struct:__list_iterator
+__list_iterator	list_iterator.h	/^struct __list_iterator : public stl_iterator::iterator<stl_iterator::bidirectional_iterator_tag, T>$/;"	s
+__list_node	list_node.h	/^struct __list_node$/;"	s
+back	list.h	/^list<T, Alloc>::back()$/;"	f	class:list
+begin	list.h	/^list<T, Alloc>::begin()$/;"	f	class:list
+clear	list.h	/^void list<T, Alloc>::clear()$/;"	f	class:list
+create_node	list.h	/^list<T, Alloc>::create_node(const value_type& value)$/;"	f	class:list
+data	list_node.h	/^    T data;$/;"	m	struct:__list_node
+destroy_node	list.h	/^void list<T, Alloc>::destroy_node(list_node* p)$/;"	f	class:list
+empty	list.h	/^bool list<T, Alloc>::empty() const$/;"	f	class:list
+empty_initialize	list.h	/^void list<T, Alloc>::empty_initialize()$/;"	f	class:list
+end	list.h	/^list<T, Alloc>::end()$/;"	f	class:list
+erase	list.h	/^list<T, Alloc>::erase(iterator position)$/;"	f	class:list
+front	list.h	/^list<T, Alloc>::front()$/;"	f	class:list
+get_node	list.h	/^list<T, Alloc>::get_node()$/;"	f	class:list
+insert	list.h	/^list<T, Alloc>::insert(iterator position, const value_type& value)$/;"	f	class:list
+list	list.h	/^class list$/;"	c
+list	list.h	/^list<T, Alloc>::list()$/;"	f	class:list
+list	list.h	/^list<T, Alloc>::list(const list& x)$/;"	f	class:list
+next	list_node.h	/^    __list_node* next;$/;"	m	struct:__list_node
+node	list.h	/^    list_node* node;$/;"	m	class:list
+operator *	list_iterator.h	/^    reference operator*() { return node->data; }$/;"	f	struct:__list_iterator
+operator ++	list_iterator.h	/^__list_iterator<T>::operator++() $/;"	f	class:__list_iterator
+operator ++	list_iterator.h	/^__list_iterator<T>::operator++(int)$/;"	f	class:__list_iterator
+operator --	list_iterator.h	/^__list_iterator<T>::operator--()$/;"	f	class:__list_iterator
+operator --	list_iterator.h	/^__list_iterator<T>::operator--(int)$/;"	f	class:__list_iterator
+operator ->	list_iterator.h	/^    pointer operator->() { return &(operator*()); }$/;"	f	struct:__list_iterator
+operator =	list.h	/^list<T, Alloc>::operator=(const list& x)$/;"	f	class:list
+pop_back	list.h	/^void list<T, Alloc>::pop_back()$/;"	f	class:list
+pop_front	list.h	/^void list<T, Alloc>::pop_front()$/;"	f	class:list
+prev	list_node.h	/^    __list_node* prev;$/;"	m	struct:__list_node
+push_back	list.h	/^void list<T, Alloc>::push_back(const value_type& value)$/;"	f	class:list
+push_front	list.h	/^void list<T, Alloc>::push_front(const value_type& value)$/;"	f	class:list
+put_node	list.h	/^void list<T, Alloc>::put_node(list_node* p)$/;"	f	class:list
+~list	list.h	/^list<T, Alloc>::~list()$/;"	f	class:list

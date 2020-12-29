@@ -1,3 +1,6 @@
+#ifndef __LIST_H
+#define __LIST_H
+
 #include "../../allocator/allocator.h"
 #include "list_iterator.h"
 #include "list_node.h"
@@ -17,8 +20,10 @@ public:
 protected:
     using list_node = __list_node<T>;
     using list_node_allocator = SimpleAlloc<list_node>;
-    using iterator = __list_iterator<T>;
     using list_alloc = SimpleAlloc<list_node>;
+
+    using iterator = __list_iterator<T>;
+    using reverse_iterator = __list_reverse_iterator<T>;
     
 private:
     list_node* node;
@@ -26,15 +31,15 @@ private:
 public:    // ctor && dctor
     list();
     ~list();
-    //list(const list&);
-    //list& operator=(const list &);
+    list(const list&);
+    list& operator=(const list &);
 
     
 public:     // iterators
-    iterator begin();
-    iterator end();
-    //reverse_iterator rbegin();
-    //reverse_iterator rend();
+    iterator begin() const;
+    iterator end() const;
+    reverse_iterator rbegin() const;
+    reverse_iterator rend() const;
     // const_iterator cbegin();
     // const_iterator cend();
     // const_iterator crbegin();
@@ -43,15 +48,20 @@ public:     // iterators
 
 public:         // capacity
     bool empty() const;
-    //size_type size() const;
+    size_type size() const;
 
 public:         // element access
     reference front();              // 获取链首元素值
     reference back();               // 获取链尾元素值
 
 public:         // modifiers
-    iterator insert(iterator position, const value_type& value);
-    iterator erase(iterator position);
+    iterator insert(iterator position, const value_type& val);
+	iterator insert(iterator position, size_type n, const value_type& val);
+    
+	template <class InputIterator>
+	iterator insert(iterator position, InputIterator first, InputIterator last);
+
+	iterator erase(iterator position);
     void push_front(const value_type& value);
     void push_back(const value_type& value);
     void pop_front();
@@ -61,6 +71,7 @@ private:        // realize detail
     list_node* get_node();          // 配置一个节点并传回
     void put_node(list_node* p);    // 释放一个节点
     list_node* create_node(const value_type& value);
+    void destroy_node(list_node* p);
     void empty_initialize();        // 产生一个空链表
     void clear();                   // 清空链表
 };
@@ -79,21 +90,51 @@ list<T, Alloc>::~list()
     put_node(node);
 }
 
+template <class T, class Alloc>
+list<T, Alloc>::list(const list& x)
+{
+	empty_initialize();	
+	insert(begin(), x.begin(), x.end());
+}
+
+template <class T, class Alloc>
+typename list<T, Alloc>::list&
+list<T, Alloc>::operator=(const list& x)
+{
+	if (&x == this) return *this;
+
+	node = x.node;
+	return *this;
+}
+
 //---------- iterators
 template <class T, class Alloc>
 typename list<T, Alloc>::iterator
-list<T, Alloc>::begin()
+list<T, Alloc>::begin() const
 {
     return iterator(node->next);
 }
 
 template <class T, class Alloc>
 typename list<T, Alloc>::iterator
-list<T, Alloc>::end()
+list<T, Alloc>::end() const
 {
     return iterator(node);
 }
 
+template <class T, class Alloc>
+typename list<T, Alloc>::reverse_iterator
+list<T, Alloc>::rbegin() const
+{
+    return reverse_iterator(node->prev);
+}
+
+template <class T, class Alloc>
+typename list<T, Alloc>::reverse_iterator
+list<T, Alloc>::rend() const
+{
+    return reverse_iterator(node);
+}
 
 
 //---------- capacity
@@ -103,14 +144,14 @@ bool list<T, Alloc>::empty() const
     return node->next==node;
 }
 
-// template <class T, class Alloc>
-// typename list<T, Alloc>::size_type
-// list<T, Alloc>::size() const
-// {
-//     size_type result = 0;
-//     distance(begin(), end(), result);
-//     return result;
-// }
+template <class T, class Alloc>
+typename list<T, Alloc>::size_type
+list<T, Alloc>::size() const
+{
+	size_type result = 0;
+	result = stl_iterator::distance(begin(), end());
+	return result;
+}
 
 
 
@@ -134,9 +175,9 @@ list<T, Alloc>::back()
 //---------- modifiers
 template <class T, class Alloc>
 typename list<T, Alloc>::iterator 
-list<T, Alloc>::insert(iterator position, const value_type& value)
+list<T, Alloc>::insert(iterator position, const value_type& val)
 {
-    list_node *tmp = create_node(value);
+    list_node *tmp = create_node(val);
     tmp->next = position.node;
     tmp->prev = position.node->prev;
     position.node->prev->next = tmp;
@@ -147,13 +188,50 @@ list<T, Alloc>::insert(iterator position, const value_type& value)
 
 template <class T, class Alloc>
 typename list<T, Alloc>::iterator
+list<T, Alloc>::insert(iterator position, size_type n, const value_type& val)
+{
+	while (n-- > 0)
+	{
+		list_node* tmp = create_node(val);
+		tmp->next = position.node;
+		tmp->prev = position.node->prev;
+		position.node->prev->next = tmp;
+		position.node->prev = tmp;
+
+		position.node = tmp;
+	}
+
+	return position;
+}
+
+
+template <class T, class Alloc>
+template <class InputIterator>
+typename list<T, Alloc>::iterator 
+list<T, Alloc>::insert(iterator position, InputIterator first, InputIterator last)
+{
+	for (; first!=last; ++first)
+	{
+		insert(position, *first);
+	}
+	return position;
+}
+
+template <class InputIterator>
+bool operator!=(InputIterator first, InputIterator second)
+{
+    return first == second;
+}
+
+
+template <class T, class Alloc>
+typename list<T, Alloc>::iterator
 list<T, Alloc>::erase(iterator position)
 {
     position.node->prev->next = position.node->next;
     position.node->next->prev = position.node->prev;
     list_node* next_node = position.node->next;
-    put_node(position.node);
-    
+    destroy_node(position.node);
     return iterator(next_node);
 }
 
@@ -191,13 +269,12 @@ template <class T, class Alloc>
 typename list<T, Alloc>::list_node* 
 list<T, Alloc>::get_node()
 {
-    return reinterpret_cast<list_node*>(list_alloc::allocate(1));
+    return static_cast<list_node*>(list_alloc::allocate(1));
 }
 
 template <class T, class Alloc>
 void list<T, Alloc>::put_node(list_node* p)
 {
-    list_alloc::destroy(p);                      // 析构对象
     list_alloc::deallocate(p, sizeof(T));        // 释放空间
 }
 
@@ -208,7 +285,7 @@ list<T, Alloc>::create_node(const value_type& value)
     list_node* p = get_node();
     try
     {
-        SimpleAlloc<T>::construct(&p->data, value);
+        SimpleSTL::construct(&p->data, value);
     }
     catch(const std::exception& e)
     {
@@ -216,6 +293,13 @@ list<T, Alloc>::create_node(const value_type& value)
         throw;
     }
     return p;
+}
+
+template <class T, class Alloc>
+void list<T, Alloc>::destroy_node(list_node* p)
+{
+    SimpleSTL::destroy(&p->data);
+    put_node(p);
 }
 
 template <class T, class Alloc>
@@ -234,8 +318,10 @@ void list<T, Alloc>::clear()
     {
         list_node* tmp = cur;
         cur = cur->next;
-        put_node(tmp);          // 销毁、释放一个节点
+        destroy_node(tmp);
     }
     node->next = node;
     node->prev = node;
 }
+
+#endif

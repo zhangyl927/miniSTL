@@ -1,3 +1,6 @@
+#ifndef __CONSTRUCT_H
+#define __CONSTRUCT_H
+
 #include <new>  // placement new
 
 namespace SimpleSTL
@@ -16,3 +19,5 @@ void destroy(T* ptr)
 }
 
 }
+
+#endif

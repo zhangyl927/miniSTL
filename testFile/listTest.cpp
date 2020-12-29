@@ -3,31 +3,66 @@
 
 #include "../container/list/list.h"
 
-#define CICLE 3
-#define FOOLOOP 100000
-
 int main()
 {
-    clock_t start;
-    start = clock();
-    list<int, SimpleAlloc<int>> listTest;
+    list<int, SimpleAlloc<int>> list1;
 
-    for (int i=0; i<CICLE; ++i)
+	std::cout << "list1 push: ";
+    for (int i=0; i<5; ++i)
     {
-        for (int j=0; j<FOOLOOP; ++j)
-        {
-            listTest.push_front(j);
-            listTest.push_back(j+3);
-        }
+   		list1.push_front(i);
+    	list1.push_back(i+3);
+	}
 
-        std::cout << "list front: " << listTest.front() << ", list end: " << listTest.back() << std::endl;
-        for (int j=0; j<FOOLOOP; ++j)
-        {
-            listTest.pop_front();
-            listTest.pop_back();
-        }
-        std::cout << "listTest is empty? " << listTest.empty() << std::endl;
+	for (auto i:list1)
+	{
+		std::cout << i << ",  ";
+	}    
+	
+	std::cout << "\nlist1 front: " << list1.front() << ", list1 end: " << list1.back() << std::endl;
+    
+	std::cout << "list2(list1) copy construct: ";
+	list<int, SimpleAlloc<int>> list2(list1);
+	for (auto i:list2)
+	{
+		std::cout << i << ",  ";
+	}
+
+	std::cout << "\nlist2 reverse: ";
+	for (auto i=list2.rbegin(); i!=list2.rend(); ++i)
+	{
+		std::cout << *i << ",  ";
+	}
+
+	std::cout << "\nlist2.size() = " << list2.size() << std::endl;
+
+	for (int i=0; i<5; ++i)
+	{
+		list1.pop_front();
+        list1.pop_back();
     }
+   
 
-    std::cout << "list spend time is: " << ((double)clock()-start)/CLOCKS_PER_SEC << std::endl;
+	std::cout << "list1 after pop: ";
+	for (auto i:list1)
+	{
+		std::cout << i << ",  ";
+	}
+
+	std::cout << "\nlist2=list1 before operator=: ";
+	for (auto i:list2)
+	{
+		std::cout << i << ",  ";
+	}
+
+	list2 = list1;
+	std::cout << "\nafter operator=: ";
+	for (auto i:list2)
+	{
+		std::cout << i << ",  ";
+	}
+
+	std::cout << "\nlist1 is empty? " << list1.empty() << std::endl;
+
+	return 0;
 }
