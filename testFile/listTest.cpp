@@ -34,7 +34,13 @@ int main()
 		std::cout << *i << ",  ";
 	}
 
-	std::cout << "\nlist2.size() = " << list2.size() << std::endl;
+	std::cout << "\nlist2.size() = " << list2.size();
+
+	std::cout << "\n list2 backwards: ";
+	for (auto rit=list2.rbegin(); rit!=list2.rend(); ++rit)
+	{
+		std::cout << *rit << ",  ";
+	}
 
 	for (int i=0; i<5; ++i)
 	{
@@ -43,7 +49,7 @@ int main()
     }
    
 
-	std::cout << "list1 after pop: ";
+	std::cout << "\nlist1 after pop: ";
 	for (auto i:list1)
 	{
 		std::cout << i << ",  ";

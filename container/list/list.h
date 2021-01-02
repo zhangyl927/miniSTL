@@ -19,12 +19,12 @@ public:
 
 protected:
     using list_node = __list_node<T>;
-    using list_node_allocator = SimpleAlloc<list_node>;
     using list_alloc = SimpleAlloc<list_node>;
 
     using iterator = __list_iterator<T>;
     using reverse_iterator = __list_reverse_iterator<T>;
-    
+   	using const_iterator = __list_const_iterator<T>;
+
 private:
     list_node* node;
 
@@ -40,8 +40,8 @@ public:     // iterators
     iterator end() const;
     reverse_iterator rbegin() const;
     reverse_iterator rend() const;
-    // const_iterator cbegin();
-    // const_iterator cend();
+    const_iterator cbegin() const;
+    const_iterator cend() const;
     // const_iterator crbegin();
     // const_iterator crend();
     
@@ -78,27 +78,27 @@ private:        // realize detail
 
 //---------- ctor
 template <class T, class Alloc>
-list<T, Alloc>::list()
+inline list<T, Alloc>::list()
 {
     empty_initialize();             
 }
 
 template <class T, class Alloc>
-list<T, Alloc>::~list()
+inline list<T, Alloc>::~list()
 {
     clear();
     put_node(node);
 }
 
 template <class T, class Alloc>
-list<T, Alloc>::list(const list& x)
+inline list<T, Alloc>::list(const list& x)
 {
 	empty_initialize();	
 	insert(begin(), x.begin(), x.end());
 }
 
 template <class T, class Alloc>
-typename list<T, Alloc>::list&
+inline typename list<T, Alloc>::list&
 list<T, Alloc>::operator=(const list& x)
 {
 	if (&x == this) return *this;
@@ -109,43 +109,56 @@ list<T, Alloc>::operator=(const list& x)
 
 //---------- iterators
 template <class T, class Alloc>
-typename list<T, Alloc>::iterator
+inline typename list<T, Alloc>::iterator
 list<T, Alloc>::begin() const
 {
     return iterator(node->next);
 }
 
 template <class T, class Alloc>
-typename list<T, Alloc>::iterator
+inline typename list<T, Alloc>::iterator
 list<T, Alloc>::end() const
 {
     return iterator(node);
 }
 
 template <class T, class Alloc>
-typename list<T, Alloc>::reverse_iterator
+inline typename list<T, Alloc>::reverse_iterator
 list<T, Alloc>::rbegin() const
 {
     return reverse_iterator(node->prev);
 }
 
 template <class T, class Alloc>
-typename list<T, Alloc>::reverse_iterator
+inline typename list<T, Alloc>::reverse_iterator
 list<T, Alloc>::rend() const
 {
     return reverse_iterator(node);
 }
 
+template <class T, class Alloc>
+inline typename list<T, Alloc>::const_iterator
+list<T, Alloc>::cbegin() const
+{
+	return const_iterator(*node.next);
+}
+
+template <class T, class Alloc>
+inline typename list<T, Alloc>::const_iterator
+list<T, Alloc>::cend() const
+{
+	return const_iterator(node);
+}
 
 //---------- capacity
 template <class T, class Alloc>
-bool list<T, Alloc>::empty() const
+inline bool list<T, Alloc>::empty() const
 {
     return node->next==node;
 }
 
 template <class T, class Alloc>
-typename list<T, Alloc>::size_type
+inline typename list<T, Alloc>::size_type
 list<T, Alloc>::size() const
 {
 	size_type result = 0;
@@ -157,14 +170,14 @@ list<T, Alloc>::size() const
 
 //---------- element access
 template <class T, class Alloc>
-typename list<T, Alloc>::reference
+inline typename list<T, Alloc>::reference
 list<T, Alloc>::front()
 {
     return *begin();
 }
 
 template <class T, class Alloc>
-typename list<T, Alloc>::reference
+inline typename list<T, Alloc>::reference
 list<T, Alloc>::back()
 {
     iterator tmp = end();
@@ -174,7 +187,7 @@ list<T, Alloc>::back()
 
 //---------- modifiers
 template <class T, class Alloc>
-typename list<T, Alloc>::iterator 
+inline typename list<T, Alloc>::iterator 
 list<T, Alloc>::insert(iterator position, const value_type& val)
 {
     list_node *tmp = create_node(val);
@@ -187,7 +200,7 @@ list<T, Alloc>::insert(iterator position, const value_type& val)
 }
 
 template <class T, class Alloc>
-typename list<T, Alloc>::iterator
+inline typename list<T, Alloc>::iterator
 list<T, Alloc>::insert(iterator position, size_type n, const value_type& val)
 {
 	while (n-- > 0)
@@ -207,7 +220,7 @@ list<T, Alloc>::insert(iterator position, size_type n, const value_type& val)
 
 template <class T, class Alloc>
 template <class InputIterator>
-typename list<T, Alloc>::iterator 
+inline typename list<T, Alloc>::iterator 
 list<T, Alloc>::insert(iterator position, InputIterator first, InputIterator last)
 {
 	for (; first!=last; ++first)
@@ -218,14 +231,14 @@ list<T, Alloc>::insert(iterator position, InputIterator first, InputIterator las
 }
 
 template <class InputIterator>
-bool operator!=(InputIterator first, InputIterator second)
+inline bool operator!=(InputIterator first, InputIterator second)
 {
     return first == second;
 }
 
 
 template <class T, class Alloc>
-typename list<T, Alloc>::iterator
+inline typename list<T, Alloc>::iterator
 list<T, Alloc>::erase(iterator position)
 {
     position.node->prev->next = position.node->next;
@@ -236,25 +249,25 @@ list<T, Alloc>::erase(iterator position)
 }
 
 template <class T, class Alloc>
-void list<T, Alloc>::push_front(const value_type& value)
+inline void list<T, Alloc>::push_front(const value_type& value)
 {
     insert(begin(), value);
 }
 
 template <class T, class Alloc>
-void list<T, Alloc>::push_back(const value_type& value)
+inline void list<T, Alloc>::push_back(const value_type& value)
 {
     insert(end(), value);
 }
 
 template <class T, class Alloc>
-void list<T, Alloc>::pop_front()
+inline void list<T, Alloc>::pop_front()
 {
     erase(begin());
 }
 
 template <class T, class Alloc>
-void list<T, Alloc>::pop_back()
+inline void list<T, Alloc>::pop_back()
 {
     iterator tmp = end();
     erase(--tmp);
@@ -263,23 +276,21 @@ void list<T, Alloc>::pop_back()
 
 
 
-
-
 template <class T, class Alloc>
-typename list<T, Alloc>::list_node* 
+inline typename list<T, Alloc>::list_node* 
 list<T, Alloc>::get_node()
 {
     return static_cast<list_node*>(list_alloc::allocate(1));
 }
 
 template <class T, class Alloc>
-void list<T, Alloc>::put_node(list_node* p)
+inline void list<T, Alloc>::put_node(list_node* p)
 {
     list_alloc::deallocate(p, sizeof(T));        // 释放空间
 }
 
 template <class T, class Alloc>
-typename list<T, Alloc>::list_node*
+inline typename list<T, Alloc>::list_node*
 list<T, Alloc>::create_node(const value_type& value)
 {
     list_node* p = get_node();
@@ -296,14 +307,14 @@ list<T, Alloc>::create_node(const value_type& value)
 }
 
 template <class T, class Alloc>
-void list<T, Alloc>::destroy_node(list_node* p)
+inline void list<T, Alloc>::destroy_node(list_node* p)
 {
     SimpleSTL::destroy(&p->data);
     put_node(p);
 }
 
 template <class T, class Alloc>
-void list<T, Alloc>::empty_initialize()
+inline void list<T, Alloc>::empty_initialize()
 {
     node = get_node();
     node->next = node;
@@ -311,7 +322,7 @@ void list<T, Alloc>::empty_initialize()
 }
 
 template <class T, class Alloc>
-void list<T, Alloc>::clear()
+inline void list<T, Alloc>::clear()
 {
     list_node* cur = node->next;
     while (cur != node)

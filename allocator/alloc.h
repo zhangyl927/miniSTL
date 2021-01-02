@@ -133,7 +133,7 @@ void* __default_alloc<T>::refill(size_t n)
 template <class T>
 char* __default_alloc<T>::chunk_alloc(size_t size, int& nobjs)
 {
-	char* result;
+	char* result = nullptr;
 	size_t total_bytes = nobjs*size;				// 所需总区块的空间大小
 	size_t bytes_left = end_free-start_free;		// 内存池剩余空间大小
 
@@ -148,7 +148,7 @@ char* __default_alloc<T>::chunk_alloc(size_t size, int& nobjs)
 		nobjs = bytes_left/size;					// 最多能分配区块数
 		total_bytes = nobjs*size;
 		result = start_free;
-		start_free += total_bytes;
+		start_free += total_bytes;					// 将这 nobjs 个块都分配给 free_list 上
 		return result;
 	}
 	else											// 一个区块都不能提供
@@ -179,7 +179,7 @@ char* __default_alloc<T>::chunk_alloc(size_t size, int& nobjs)
 					*myfreelist = p->free_list_link;
 					start_free = reinterpret_cast<char*>(p);
 					end_free = start_free+i;
-					return chunk_alloc(size, nobjs);		// 在调用一次，此时内存池有一个块可用
+					return chunk_alloc(size, nobjs);		// 再调用一次，此时内存池有一个块可用
 				}
 			}
 		}

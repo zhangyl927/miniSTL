@@ -5,12 +5,6 @@ template <class T, class Alloc=__default_alloc<T>>
 class SimpleAlloc
 {
 public:
-    template <class U>
-    struct rebind
-    {
-        typedef SimpleAlloc<U> other;
-    };
-
     static void* allocate(size_t n);
     static void deallocate(T* ptr, size_t n);
 
@@ -32,16 +26,14 @@ void SimpleAlloc<T, Alloc>::deallocate(T* ptr, size_t n)
 }
 
 template <class T, class Alloc>
-void* SimpleAlloc<T, Alloc>::construct(T*ptr, T value)
+void* SimpleAlloc<T, Alloc>::construct(T* ptr, T value)
 {
-   //new(ptr) T(value);
 	SimpleSTL::construct(ptr, value);
 }
 
 template <class T, class Alloc>
 void SimpleAlloc<T, Alloc>::destroy(T* ptr)
 {
-   // ptr->~T();
 	SimpleSTL::destroy(ptr);
 }
 
