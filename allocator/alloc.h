@@ -2,8 +2,9 @@
 #define __ALLOC__H
 
 #include <cstdlib>
+#include <new>
 
-#define NUM 20
+const int NUM = 20;
 
 enum __freeListSetting
 {
@@ -11,6 +12,97 @@ enum __freeListSetting
 	__MAX_BYTES = 128,
 	__NFREELISTS = __MAX_BYTES/__ALIGN
 };
+
+
+class __malloc_alloc
+{
+public:
+	using func = void (*)();
+
+	static void* allocate(size_t n);
+	static void deallocate(void* p, size_t n);
+	static void* reallocate(void* p, size_t new_sz);
+	
+private:
+	static void *oom_malloc(size_t);
+	static void *oom_realloc(void*, size_t);
+	static func __malloc_alloc_oom_handler;
+	static func set_malloc_handler(func f);
+
+};
+
+
+void* __malloc_alloc::allocate(size_t n)
+{
+	void *result = malloc(n);
+	if (0 == result) result = oom_malloc(n);
+	return result;
+}
+
+
+void __malloc_alloc::deallocate(void *p, size_t n)
+{
+	free(p);
+}
+
+
+void* __malloc_alloc::reallocate(void *p, size_t new_sz)
+{
+	void *result = realloc(p, new_sz);
+	if (0 == result) result = oom_realloc(p, new_sz);
+	return result;
+}
+
+
+__malloc_alloc::func __malloc_alloc::set_malloc_handler(func f)
+{
+	func old = __malloc_alloc_oom_handler;
+	__malloc_alloc_oom_handler = f;
+	return old;
+} 
+
+
+__malloc_alloc::func __malloc_alloc::__malloc_alloc_oom_handler = 0;
+
+
+
+void* __malloc_alloc::oom_malloc(size_t n)
+{
+	func my_malloc_handler;
+	void *result;
+
+	for (; ;)
+	{
+		my_malloc_handler = __malloc_alloc_oom_handler;
+		if (0 == my_malloc_handler) 
+		{
+			throw std::bad_alloc();
+		}
+		(*my_malloc_handler)();
+		result = malloc(n);
+		if (result) return result;
+	} 
+}
+
+
+void* __malloc_alloc::oom_realloc(void* p, size_t n)
+{
+	func my_malloc_handler;
+	void *result;
+
+	for (; ;)
+	{
+		my_malloc_handler = __malloc_alloc_oom_handler;
+		if (0 == my_malloc_handler) 
+		{
+			throw std::bad_alloc();
+		}
+		(*my_malloc_handler)();
+		result = realloc(p, n);
+		if (result) return result;
+	} 
+}
+
 
 template <class T>
 class __default_alloc
@@ -64,6 +156,11 @@ __default_alloc<T>::freeList[__NFREELISTS] = { nullptr, nullptr, nullptr, nullpt
 template <class T>
 void* __default_alloc<T>::allocate(size_t n)
 {
+	if (n > (size_t)__MAX_BYTES)					// 大于 128，调用第一级配置器
+	{
+		return __malloc_alloc::allocate(n);
+	}
+
 	obj* volatile * myfreelist;
 	obj* result;
 
@@ -81,6 +178,12 @@ void* __default_alloc<T>::allocate(size_t n)
 template <class T>
 void __default_alloc<T>::deallocate(void* p, size_t n)
 {
+	if (n > (size_t)__MAX_BYTES)					// 大于 128，调用第一级配置器
+	{
+		__malloc_alloc::deallocate(p, n);
+		return;
+	}
+
 	obj* volatile * myfreelist;
 	myfreelist = freeList + freeListFind(n);
 	obj* q = static_cast<obj*>(p);
@@ -170,7 +273,7 @@ char* __default_alloc<T>::chunk_alloc(size_t size, int& nobjs)
 			obj* volatile * myfreelist;						
 			obj* p;
 			int i;
-			for (i=size; i<=__MAX_BYTES; i+=__ALIGN)			// 从 size 大小的 free_list 开始遍历
+			for (i=size+1; i<=__MAX_BYTES; i+=__ALIGN)			// 从 size 大小的 free_list 开始遍历
 			{
 				myfreelist = freeList+freeListFind(i);
 				p = *myfreelist;
@@ -182,6 +285,8 @@ char* __default_alloc<T>::chunk_alloc(size_t size, int& nobjs)
 					return chunk_alloc(size, nobjs);		// 再调用一次，此时内存池有一个块可用
 				}
 			}
+			end_free = 0;									// 都没有内存可用，调用第一级配置器看能否获取一些内存
+			start_free = (char *)__malloc_alloc::allocate(bytes_to_get);
 		}
 		heap_size += bytes_to_get;
 		end_free = start_free+bytes_to_get;
