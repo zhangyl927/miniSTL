@@ -259,7 +259,7 @@ char* __default_alloc<T>::chunk_alloc(size_t size, int& nobjs)
 		if (bytes_left > 0)										// 将内存池残余空间挂到 free_list 上
 		{
 			obj* volatile * myfreelist;
-			myfreelist = freeList+freeListFind(bytes_left);
+			myfreelist = freeList+freeListFind(bytes_left);   // if bytes_left != n ?
 			reinterpret_cast<obj*>(start_free)->free_list_link = *myfreelist;
 			*myfreelist = reinterpret_cast<obj*>(start_free);
 		}

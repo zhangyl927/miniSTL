@@ -31,9 +31,14 @@ private:
 public:    // ctor && dctor
     list();
     ~list();
+
+    // copy ctor and copy assign
     list(const list&);
     list& operator=(const list &);
 
+    // move ctor and move assign
+    list(list&&);
+    list& operator=(list&&);
     
 public:     // iterators
     iterator begin() const;
@@ -74,9 +79,10 @@ private:        // realize detail
     void destroy_node(list_node* p);
     void empty_initialize();        // 产生一个空链表
     void clear();                   // 清空链表
+    void swap(list& rhs) { ::swap(node, rhs.node); }
 };
 
-//---------- ctor
+//---------- ctor and dctor
 template <class T, class Alloc>
 inline list<T, Alloc>::list()
 {
@@ -90,21 +96,38 @@ inline list<T, Alloc>::~list()
     put_node(node);
 }
 
+//----------- copy ctor and copy assign
 template <class T, class Alloc>
-inline list<T, Alloc>::list(const list& x)
+inline list<T, Alloc>::list(const list& rhs)
 {
 	empty_initialize();	
-	insert(begin(), x.begin(), x.end());
+	insert(begin(), rhs.begin(), rhs.end());
 }
 
 template <class T, class Alloc>
 inline typename list<T, Alloc>::list&
-list<T, Alloc>::operator=(const list& x)
+list<T, Alloc>::operator=(const list& rhs)
 {
-	if (&x == this) return *this;
-
-	node = x.node;
+    list temp(rhs);
+    swap(rhs);
 	return *this;
+}
+
+//--------------move ctor and move assign
+template <class T, class Alloc>
+inline list<T, Alloc>::list(list&& rhs) : node(rhs.node)
+{
+    rhs.node = nullptr;
+}
+
+template <class T, class Alloc>
+inline typename list<T, Alloc>::list&
+list<T, Alloc>::operator=(list&& rhs)
+{
+    clear();
+    list temp(rhs);
+    swap(temp);
+    return *this;
 }
 
 //---------- iterators
@@ -333,6 +356,14 @@ inline void list<T, Alloc>::clear()
     }
     node->next = node;
     node->prev = node;
+}
+
+template <class T>
+inline void swap(T* p1, T *p2)
+{
+    T* temp = p1;
+    p1 = p2;
+    p2 = temp;
 }
 
 #endif

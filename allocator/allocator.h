@@ -40,8 +40,5 @@ void SimpleAlloc<T, Alloc>::destroy(T* ptr)
 template <class T, class Alloc>
 void SimpleAlloc<T, Alloc>::destroy(T* first, T* last)
 {
-	for (; first!=last; ++first)
-	{
-		first->~T();
-	}
+	SimpleSTL::destroy(first, last);
 }
